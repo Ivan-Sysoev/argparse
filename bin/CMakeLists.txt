@@ -1,11 +1,7 @@
-add_executable(app main.cpp)
+add_executable(argparser main.cpp)
 
-set_target_properties(app PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app"
-)
+target_link_libraries(argparser PRIVATE argparser_lib)
 
-target_link_libraries(app PRIVATE argparser)
-
-target_include_directories(app PRIVATE
+target_include_directories(argparser PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )

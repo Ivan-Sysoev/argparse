@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+
 class ArgParser {
 private:
     struct Flag {
@@ -29,4 +30,7 @@ public:
 
     bool WriteFlag(const std::string& short_name);
     bool FindShortArg(const std::string& short_name, std::vector<std::string>& free_args);
+
+    bool WriteLongFlag(const std::string& long_name);
+    bool WriteLongArg(const std::string& long_name, const std::string& value);
 };
