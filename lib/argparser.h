@@ -8,13 +8,13 @@ private:
     struct Flag {
         std::string short_name;
         std::string long_name;
-        bool& include;
+        bool* include;
     };
 
     struct NamedArg {
         std::string short_name;
         std::string long_name;
-        std::vector<std::string>& free_args;
+        std::vector<std::string>* free_args;
     };
     
     std::vector<Flag> flags;
@@ -24,12 +24,12 @@ public:
     std::vector<std::string> positional_args;
 
     void AddFlag(const std::string& short_name, const std::string& long_name, bool& include);
-    void AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>& free_args);
+    void AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>* free_args);
 
     void Parse(int argc, char** argv);
 
     bool WriteFlag(const std::string& short_name);
-    bool FindShortArg(const std::string& short_name, std::vector<std::string>& free_args);
+    bool FindShortArg(const std::string& short_name, std::vector<std::string>*& free_args);
 
     bool WriteLongFlag(const std::string& long_name);
     bool WriteLongArg(const std::string& long_name, const std::string& value);

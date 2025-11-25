@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     std::vector<std::string> files;
 
     parser.AddFlag("-o", "--output", output); 
-    parser.AddArgument("-f", "--file", files);
+    parser.AddArgument("-f", "--file", &files);
 
     try {
         parser.Parse(argc, argv);
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::cout << (output ? "files to output" : "files to input") << '\n';
+    if (output) std::cout << "files to output" << '\n';
     for (const auto& filename : files) std::cout << filename << '\n';
 
     return 0;

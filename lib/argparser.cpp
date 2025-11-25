@@ -1,27 +1,28 @@
 #include "argparser.h"
+#include <iostream>
 #include <string>
 #include <vector>
 #include <stdexcept>
 
 void ArgParser::AddFlag(const std::string& short_name, const std::string& long_name, bool& include) {
-    flags.push_back({short_name, long_name, include});
+    flags.push_back({short_name, long_name, &include});
 }
 
-void ArgParser::AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>& free_args) {
+void ArgParser::AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>* free_args) {
     named_args.push_back({short_name, long_name, free_args});
 }
 
 bool ArgParser::WriteFlag(const std::string& short_name) {
     for (auto& f : flags) {
         if (f.short_name == short_name) {
-            f.include = true;
+            *f.include = true;
             return true;
         }
     }
     return false;
 }
 
-bool ArgParser::FindShortArg(const std::string& short_name, std::vector<std::string>& free_args) {
+bool ArgParser::FindShortArg(const std::string& short_name, std::vector<std::string>*& free_args) {
     for (auto& na : named_args) {
         if (na.short_name == short_name) {
             free_args = na.free_args;
@@ -38,7 +39,7 @@ bool IsSpecArg(const std::string& arg) {
 bool ArgParser::WriteLongFlag(const std::string& long_name) {
     for (auto& f : flags) {
         if (f.long_name == long_name) {
-            f.include = true;
+            *f.include = true;
             return true;
         }
     }
@@ -48,7 +49,7 @@ bool ArgParser::WriteLongFlag(const std::string& long_name) {
 bool ArgParser::WriteLongArg(const std::string& long_name, const std::string& value) {
     for (auto& na : named_args) {
         if (na.long_name == long_name) {
-            na.free_args.push_back(value);
+            na.free_args->push_back(value);
             return true;
         }
     }
@@ -65,7 +66,7 @@ void ArgParser::Parse(int argc, char** argv) {
         const std::string& arg = argv[i];
 
         // positional arg
-        if (IsSpecArg(arg)) {
+        if (!IsSpecArg(arg)) {
             positional_args.push_back(arg);
             continue;
         }
@@ -73,13 +74,15 @@ void ArgParser::Parse(int argc, char** argv) {
         if (arg[1] != '-') {
             // short flag / short named arg
             if (!WriteFlag(arg)) {
-                std::vector<std::string> free_args;
+                std::vector<std::string>* free_args = nullptr;
                 if (!FindShortArg(arg, free_args)) {
                     throw std::runtime_error("Unspecified flag / argument provided");
                 }
                 
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
-                    free_args.push_back(argv[i + 1]);
+                    free_args->push_back(argv[i + 1]);
+                    // std::cout << argv[i+1];
+                    i++;
                 }
             }
             continue;
