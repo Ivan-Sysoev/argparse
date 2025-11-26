@@ -4,28 +4,28 @@
 #include <vector>
 #include <stdexcept>
 
-void ArgParser::AddFlag(const char* short_name, const char* long_name, bool& include) {
+void ArgParser::AddFlag(const char* short_name, const char* long_name, bool* include) {
     Flag f;
     if (short_name != nullptr) f.short_name = short_name;
     if (long_name != nullptr) f.long_name = long_name;
-    f.include = &include;
-    flags.push_back(f);
+    f.include = include;
+    required_flags.push_back(f);
 }
 
-void ArgParser::AddArgument(const char* short_name, const char* long_name, std::vector<std::string>& free_args, int args_count) {
-    std::vector<std::string>* args = &free_args;
+void ArgParser::AddArgument(const char* short_name, const char* long_name, std::vector<std::string>* free_args, int args_count) {
     NamedArg arg;
     if (short_name != nullptr) arg.short_name = short_name;
     if (long_name != nullptr) arg.long_name = long_name;
-    arg.free_args = &free_args;
+    arg.free_args = free_args;
     arg.args_count = args_count;
-    named_args.push_back(arg);
+    required_named_args.push_back(arg);
 }
 
-bool ArgParser::WriteFlag(const std::string& short_name) {
-    for (auto& f : flags) {
+bool ArgParser::WriteShortFlag(const std::string& short_name) {
+    for (auto& f : required_flags) {
         if (f.short_name == short_name) {
-            *f.include = true;
+            if (f.include != nullptr) *f.include = true;
+            included_flags.push_back(f);
             return true;
         }
     }
@@ -33,7 +33,7 @@ bool ArgParser::WriteFlag(const std::string& short_name) {
 }
 
 bool ArgParser::FindShortArg(const std::string& short_name, NamedArg*& out) {
-    for (auto& na : named_args) {
+    for (auto& na : required_named_args) {
         if (na.short_name == short_name) {
             out = &na;
             return true;
@@ -47,9 +47,10 @@ bool IsSpecArg(const std::string& arg) {
 }
 
 bool ArgParser::WriteLongFlag(const std::string& long_name) {
-    for (auto& f : flags) {
+    for (auto& f : required_flags) {
         if (f.long_name == long_name) {
-            *f.include = true;
+            if (f.include != nullptr) *f.include = true;
+            included_flags.push_back(f);
             return true;
         }
     }
@@ -57,7 +58,7 @@ bool ArgParser::WriteLongFlag(const std::string& long_name) {
 }
 
 bool ArgParser::WriteLongArg(const std::string& long_name, const std::string& value) {
-    for (auto& na : named_args) {
+    for (auto& na : required_named_args) {
         if (na.long_name == long_name) {
             na.free_args->push_back(value);
             return true;
@@ -83,7 +84,7 @@ void ArgParser::Parse(int argc, char** argv) {
 
         if (arg[1] != '-') {
             // short flag / short named arg
-            if (!WriteFlag(arg)) {
+            if (!WriteShortFlag(arg)) {
                 NamedArg* found_arg = nullptr;
                 if (!FindShortArg(arg, found_arg)) {
                     throw std::runtime_error("Unspecified flag / argument provided");
@@ -99,7 +100,7 @@ void ArgParser::Parse(int argc, char** argv) {
                     i++;
                 }
                 if (found_arg->args_count > 0 && counter != found_arg->args_count) {
-                    throw std::runtime_error("Not enough argument values provided");
+                    throw std::runtime_error("Not enough argument values provided\nTarget argument: \"" + found_arg->short_name + "\"");
                 }
             }
             continue;
