@@ -98,6 +98,9 @@ void ArgParser::Parse(int argc, char** argv) {
                     counter++;
                     i++;
                 }
+                if (found_arg->args_count > 0 && counter != found_arg->args_count) {
+                    throw std::runtime_error("Not enough argument values provided");
+                }
             }
             continue;
         }
