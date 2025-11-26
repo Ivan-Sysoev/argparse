@@ -23,8 +23,8 @@ private:
 public:
     std::vector<std::string> positional_args;
 
-    void AddFlag(const std::string& short_name, const std::string& long_name, bool& include);
-    void AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>* free_args);
+    void AddFlag(const char* short_name, const char* long_name, bool& include);
+    void AddArgument(const char* short_name, const char* long_name, std::vector<std::string>& free_args);
 
     void Parse(int argc, char** argv);
 

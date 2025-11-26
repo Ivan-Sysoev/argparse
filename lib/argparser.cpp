@@ -4,12 +4,21 @@
 #include <vector>
 #include <stdexcept>
 
-void ArgParser::AddFlag(const std::string& short_name, const std::string& long_name, bool& include) {
-    flags.push_back({short_name, long_name, &include});
+void ArgParser::AddFlag(const char* short_name, const char* long_name, bool& include) {
+    Flag f;
+    if (short_name != nullptr) f.short_name = short_name;
+    if (long_name != nullptr) f.long_name = long_name;
+    f.include = &include;
+    flags.push_back(f);
 }
 
-void ArgParser::AddArgument(const std::string& short_name, const std::string& long_name, std::vector<std::string>* free_args) {
-    named_args.push_back({short_name, long_name, free_args});
+void ArgParser::AddArgument(const char* short_name, const char* long_name, std::vector<std::string>& free_args) {
+    std::vector<std::string>* args = &free_args;
+    NamedArg arg;
+    if (short_name != nullptr) arg.short_name = short_name;
+    if (long_name != nullptr) arg.long_name = long_name;
+    arg.free_args = &free_args;
+    named_args.push_back(arg);
 }
 
 bool ArgParser::WriteFlag(const std::string& short_name) {
@@ -81,7 +90,6 @@ void ArgParser::Parse(int argc, char** argv) {
                 
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
                     free_args->push_back(argv[i + 1]);
-                    // std::cout << argv[i+1];
                     i++;
                 }
             }
@@ -91,12 +99,12 @@ void ArgParser::Parse(int argc, char** argv) {
         size_t pos = arg.find('=');
         if (pos == std::string::npos) {
             // long flag
-            if (!WriteLongFlag(arg.substr(2))) {
+            if (!WriteLongFlag(arg)) {
                 throw std::runtime_error("Unknown flag provided");
             }
         } else {
             // long named arg
-            if (!WriteLongArg(arg.substr(2, pos-2), arg.substr(pos + 1))) {
+            if (!WriteLongArg(arg.substr(0, pos), arg.substr(pos + 1))) {
                 throw std::runtime_error("Unknown argument provided");
             }
         }
