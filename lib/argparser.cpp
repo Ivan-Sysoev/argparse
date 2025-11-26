@@ -12,12 +12,13 @@ void ArgParser::AddFlag(const char* short_name, const char* long_name, bool& inc
     flags.push_back(f);
 }
 
-void ArgParser::AddArgument(const char* short_name, const char* long_name, std::vector<std::string>& free_args) {
+void ArgParser::AddArgument(const char* short_name, const char* long_name, std::vector<std::string>& free_args, int args_count) {
     std::vector<std::string>* args = &free_args;
     NamedArg arg;
     if (short_name != nullptr) arg.short_name = short_name;
     if (long_name != nullptr) arg.long_name = long_name;
     arg.free_args = &free_args;
+    arg.args_count = args_count;
     named_args.push_back(arg);
 }
 
@@ -31,10 +32,10 @@ bool ArgParser::WriteFlag(const std::string& short_name) {
     return false;
 }
 
-bool ArgParser::FindShortArg(const std::string& short_name, std::vector<std::string>*& free_args) {
+bool ArgParser::FindShortArg(const std::string& short_name, NamedArg*& out) {
     for (auto& na : named_args) {
         if (na.short_name == short_name) {
-            free_args = na.free_args;
+            out = &na;
             return true;
         }
     }
@@ -83,13 +84,18 @@ void ArgParser::Parse(int argc, char** argv) {
         if (arg[1] != '-') {
             // short flag / short named arg
             if (!WriteFlag(arg)) {
-                std::vector<std::string>* free_args = nullptr;
-                if (!FindShortArg(arg, free_args)) {
+                NamedArg* found_arg = nullptr;
+                if (!FindShortArg(arg, found_arg)) {
                     throw std::runtime_error("Unspecified flag / argument provided");
                 }
                 
+                int counter = 0;
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
-                    free_args->push_back(argv[i + 1]);
+                    if (found_arg->args_count != -1 && counter >= found_arg->args_count) break;
+
+                    found_arg->free_args->push_back(argv[i + 1]);
+                    
+                    counter++;
                     i++;
                 }
             }

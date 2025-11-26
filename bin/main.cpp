@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     bool into;
     bool power;
 
-    parser.AddArgument("-o", "--output", output);    
+    parser.AddArgument("-o", "--output", output, 2);
     parser.AddArgument(nullptr, "--mode", mode);
 
     parser.AddFlag(nullptr, "--into", into);
