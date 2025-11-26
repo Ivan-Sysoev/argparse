@@ -23,9 +23,15 @@ private:
     std::vector<NamedArg> required_named_args;
 
 public:
-    std::vector<Flag> included_flags;
-    std::vector<NamedArg> parsed_named_args;
+    std::vector<Flag*> included_flags;
+    std::vector<NamedArg*> parsed_named_args;
     std::vector<std::string> positional_args;
+    
+    ~ArgParser() {
+        for (NamedArg* na : parsed_named_args) {
+            delete na->free_args;
+        }
+    }
 
     void AddFlag(const char* short_name, const char* long_name, bool* include);
     void AddArgument(const char* short_name, const char* long_name, std::vector<std::string>* free_args, int args_count=-1);

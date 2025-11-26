@@ -25,7 +25,7 @@ bool ArgParser::WriteShortFlag(const std::string& short_name) {
     for (auto& f : required_flags) {
         if (f.short_name == short_name) {
             if (f.include != nullptr) *f.include = true;
-            included_flags.push_back(f);
+            included_flags.push_back(&f);
             return true;
         }
     }
@@ -50,7 +50,7 @@ bool ArgParser::WriteLongFlag(const std::string& long_name) {
     for (auto& f : required_flags) {
         if (f.long_name == long_name) {
             if (f.include != nullptr) *f.include = true;
-            included_flags.push_back(f);
+            included_flags.push_back(&f);
             return true;
         }
     }
@@ -60,7 +60,11 @@ bool ArgParser::WriteLongFlag(const std::string& long_name) {
 bool ArgParser::WriteLongArg(const std::string& long_name, const std::string& value) {
     for (auto& na : required_named_args) {
         if (na.long_name == long_name) {
+            if (na.free_args == nullptr) {
+                na.free_args = new std::vector<std::string>();
+            }
             na.free_args->push_back(value);
+            parsed_named_args.push_back(&na);
             return true;
         }
     }
@@ -90,6 +94,9 @@ void ArgParser::Parse(int argc, char** argv) {
                     throw std::runtime_error("Unspecified flag / argument provided");
                 }
                 
+                if (found_arg->free_args == nullptr) {
+                    found_arg->free_args = new std::vector<std::string>();
+                }
                 int counter = 0;
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
                     if (found_arg->args_count > 0 && counter >= found_arg->args_count) break;
@@ -102,6 +109,7 @@ void ArgParser::Parse(int argc, char** argv) {
                 if (found_arg->args_count > 0 && counter != found_arg->args_count) {
                     throw std::runtime_error("Not enough argument values provided\nTarget argument: \"" + found_arg->short_name + "\"");
                 }
+                parsed_named_args.push_back(found_arg);
             }
             continue;
         }
