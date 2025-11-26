@@ -91,7 +91,7 @@ void ArgParser::Parse(int argc, char** argv) {
                 
                 int counter = 0;
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
-                    if (found_arg->args_count != -1 && counter >= found_arg->args_count) break;
+                    if (found_arg->args_count > 0 && counter >= found_arg->args_count) break;
 
                     found_arg->free_args->push_back(argv[i + 1]);
                     
