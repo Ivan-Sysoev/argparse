@@ -3,3 +3,6 @@ tests/
 .vscode/
 ref/
 .DS_Store
+
+# В разработке
+README.md 

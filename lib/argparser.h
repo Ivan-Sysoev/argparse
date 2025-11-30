@@ -15,6 +15,7 @@ public:
         std::string short_name;
         std::string long_name;
         std::vector<std::string>* free_args;
+        std::string* single_arg;
         int args_count;
     };
 
@@ -35,6 +36,7 @@ public:
 
     void AddFlag(const char* short_name, const char* long_name, bool* include);
     void AddArgument(const char* short_name, const char* long_name, std::vector<std::string>* free_args, int args_count=-1);
+    void AddArgument(const char* short_name, const char* long_name, std::string* single_arg); // перегрузка для single arg
 
     void Parse(int argc, char** argv);
 

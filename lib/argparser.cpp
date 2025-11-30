@@ -17,7 +17,18 @@ void ArgParser::AddArgument(const char* short_name, const char* long_name, std::
     if (short_name != nullptr) arg.short_name = short_name;
     if (long_name != nullptr) arg.long_name = long_name;
     arg.free_args = free_args;
+    arg.single_arg = nullptr;
     arg.args_count = args_count;
+    required_named_args.push_back(arg);
+}
+
+// перегрузка для single arg
+void ArgParser::AddArgument(const char* short_name, const char* long_name, std::string* single_arg) {
+    NamedArg arg;
+    if (short_name != nullptr) arg.short_name = short_name;
+    if (long_name != nullptr) arg.long_name = long_name;
+    arg.single_arg = single_arg;
+    arg.args_count = 1;
     required_named_args.push_back(arg);
 }
 
@@ -93,10 +104,22 @@ void ArgParser::Parse(int argc, char** argv) {
                 if (!FindShortArg(arg, found_arg)) {
                     throw std::runtime_error("Unspecified flag / argument provided");
                 }
+                // std::cout << found_arg->long_name << std::endl;
                 
+                // if (found_arg->single_arg != nullptr) {
+                //     if (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
+                //         *(found_arg->single_arg) = argv[i + 1];
+                //         parsed_named_args.push_back(found_arg);
+                //         continue;
+                //     } else {
+                //         throw std::runtime_error("Not enough argument values provided\nTarget argument: \"" + found_arg->short_name + "\"");
+                //     }
+                // }
+
                 if (found_arg->free_args == nullptr) {
                     found_arg->free_args = new std::vector<std::string>();
                 }
+
                 int counter = 0;
                 while (i + 1 < argc && !IsSpecArg(argv[i + 1])) {
                     if (found_arg->args_count > 0 && counter >= found_arg->args_count) break;
@@ -106,9 +129,16 @@ void ArgParser::Parse(int argc, char** argv) {
                     counter++;
                     i++;
                 }
+
                 if (found_arg->args_count > 0 && counter != found_arg->args_count) {
                     throw std::runtime_error("Not enough argument values provided\nTarget argument: \"" + found_arg->short_name + "\"");
                 }
+                
+                if (found_arg->single_arg != nullptr) {
+                    // *(found_arg->single_arg) = (*(found_arg->free_args))[0];
+                    *(found_arg->single_arg) = argv[i];
+                }
+
                 parsed_named_args.push_back(found_arg);
             }
             continue;
