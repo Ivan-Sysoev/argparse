@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
 
     std::cout << "Mode = \"" << mode << "\"\n";
 
-    // std::cout << "Positional args:\n";
-    // for (const auto& name : parser.positional_args) std::cout << name << ' ';
+    std::cout << "Positional args:\n";
+    for (const auto& name : parser.positional_args) std::cout << name << ' ';
 
     return 0;
 }

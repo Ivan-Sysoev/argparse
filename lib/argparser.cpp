@@ -75,6 +75,11 @@ bool ArgParser::WriteLongArg(const std::string& long_name, const std::string& va
                 na.free_args = new std::vector<std::string>();
             }
             na.free_args->push_back(value);
+
+            if (na.single_arg != nullptr) {
+                *(na.single_arg) = value;
+            }
+            
             parsed_named_args.push_back(&na);
             return true;
         }
